@@ -1,10 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import * as schedule from 'node-schedule';
 
 @Injectable()
-export class EventosService {
+export class EventosService implements OnModuleInit {
+  private readonly logger = new Logger(EventosService.name);
   private eventValues: any;
 
-  faturamentoEmpresa = async (key) => {
+  async onModuleInit() {
+    this.scheduleDailyTask();
+  }
+
+  private scheduleDailyTask() {
+    // Define o horário para a execução da tarefa (22:00 todos os dias)
+    schedule.scheduleJob('0 22 * * *', async () => {
+      try {
+        await this.listar();
+        this.logger.log(
+          'Atualização dos eventos 379 e 380 executada com sucesso às 22:00',
+        );
+      } catch (error) {
+        this.logger.error('Erro ao executar tarefa diária:', error.message);
+      }
+    });
+  }
+
+  faturamentoEmpresa = async (key: string) => {
     try {
       const response = await fetch(
         'https://app.e-kontroll.com.br/api/v1/metodo/faturamento',
@@ -31,19 +51,18 @@ export class EventosService {
 
       const data = await response.json();
 
-      // Verifica se 'dados' existe na resposta antes de acessar 'dados.data'
       if (!data.dados || !data.dados.data) {
         throw new Error('Formato de resposta inválido: dados não encontrados');
       }
 
       return data.dados.data;
     } catch (error) {
-      console.error('Erro na requisição de faturamento:', error.message);
-      throw error; // Lança o erro para ser tratado no código que chama faturamentoEmpresa
+      this.logger.error('Erro na requisição de faturamento:', error.message);
+      throw error;
     }
   };
 
-  impostosEmpresa = async (key) => {
+  impostosEmpresa = async (key: string) => {
     try {
       const response = await fetch(
         'https://app.e-kontroll.com.br/api/v1/metodo/impostos',
@@ -67,39 +86,44 @@ export class EventosService {
       }
 
       const data = await response.json();
-
       return data.dados.data;
     } catch (error) {
-      console.error('Erro na função impostosEmpresa:', error);
-      throw error; // Lança o erro novamente para quem chamou a função lidar com ele
+      this.logger.error('Erro na função impostosEmpresa:', error.message);
+      throw error;
     }
   };
+
   listarEmpresas = async () => {
-    const response = await fetch(
-      'https://app.e-kontroll.com.br/api/v1/metodo/listar_empresas',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    try {
+      const response = await fetch(
+        'https://app.e-kontroll.com.br/api/v1/metodo/listar_empresas',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            api_key:
+              'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+            api_key_empresa:
+              'yQuZX1A45FYa7gohZvmlHHDsUPvjLnGCTxuXMdae4W8T5x05hgWEvQgtUmxf',
+          }),
         },
-        body: JSON.stringify({
-          api_key:
-            'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
-          api_key_empresa:
-            'yQuZX1A45FYa7gohZvmlHHDsUPvjLnGCTxuXMdae4W8T5x05hgWEvQgtUmxf',
-        }),
-      },
-    );
+      );
 
-    if (!response.ok) {
-      throw new Error('Network response was not ok ' + response.statusText);
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+
+      const data = await response.json();
+      return data.dados.data;
+    } catch (error) {
+      this.logger.error('Erro ao listar empresas:', error.message);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.dados.data;
   };
 
-  delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   listar = async () => {
     try {
@@ -111,28 +135,24 @@ export class EventosService {
         const cnpj = empresa.inscricao_federal;
         const key = empresa.api_key_cliente;
 
-        let faturar,
-          comprar,
-          despesas,
-          impostos,
-          somaImpostos = 0;
+        let faturar, comprar, despesas, impostos;
+        let somaImpostos = 0;
 
-        if (key != null) {
+        if (key) {
           const modificarImposto = await this.impostosEmpresa(key);
-          if (modificarImposto.length == 0) {
+          if (modificarImposto.length === 0) {
             impostos = 'Sem informações';
           } else {
-            for (let i = 0; i < modificarImposto.length; i++) {
-              impostos = parseFloat(modificarImposto[i].arecolher);
+            for (const imposto of modificarImposto) {
+              impostos = parseFloat(imposto.arecolher);
               if (!isNaN(impostos)) {
-                // Verifica se a conversão foi bem-sucedida
                 somaImpostos += impostos;
-                somaImpostos = Math.round(somaImpostos * 100) / 100; // Arredonda para 2 casas decimais
+                somaImpostos = Math.round(somaImpostos * 100) / 100;
               }
             }
           }
           const modificar = await this.faturamentoEmpresa(key);
-          if (modificar.length == 0) {
+          if (modificar.length === 0) {
             faturar = 'Sem informações';
             comprar = 'Sem informações';
             despesas = 'Sem informações';
@@ -148,12 +168,12 @@ export class EventosService {
           impostos = 'API key desativada';
         }
 
-        cont = cont + 1;
-        console.log(faturar);
-        console.log(comprar);
-        console.log(despesas);
-        console.log(somaImpostos);
-        console.log(cont);
+        cont++;
+        this.logger.log(`Faturamento: ${faturar}`);
+        this.logger.log(`Compras: ${comprar}`);
+        this.logger.log(`Despesas: ${despesas}`);
+        this.logger.log(`Soma dos impostos: ${somaImpostos}`);
+        this.logger.log(`Adicionadas: ${cont}`);
 
         separacaoEmpresas.push({
           nome: nome,
@@ -162,18 +182,16 @@ export class EventosService {
           faturamento: faturar,
           compras: comprar,
           despesas: despesas,
-
           impostos: somaImpostos,
         });
 
-        // Adiciona um intervalo de 1 segundo (1000 ms) entre as requisições
         await this.delay(1600);
       }
 
-      console.log(separacaoEmpresas);
+      this.logger.log('Empresas separadas:', JSON.stringify(separacaoEmpresas));
       this.eventValues = separacaoEmpresas;
     } catch (error) {
-      console.error('Erro ao listar empresas:', error.message);
+      this.logger.error('Erro ao listar empresas:', error.message);
     }
   };
 
