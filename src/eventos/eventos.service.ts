@@ -188,7 +188,9 @@ export class EventosService implements OnModuleInit {
         await this.delay(1600);
       }
 
-      this.logger.log('Empresas separadas:', JSON.stringify(separacaoEmpresas));
+      this.logger.log(
+        `Total de ${separacaoEmpresas.length} empresas atualizadas com sucesso!`,
+      );
       this.eventValues = separacaoEmpresas;
     } catch (error) {
       this.logger.error('Erro ao listar empresas:', error.message);
