@@ -14,4 +14,8 @@ export class CalendarioController {
   async getProximoAniversario() {
     return this.calendarioService.getProximoAniversario();
   }
+  @Get('aniversario-hoje')
+  async aniversario() {
+    return this.calendarioService.getAniversarioHoje();
+  }
 }

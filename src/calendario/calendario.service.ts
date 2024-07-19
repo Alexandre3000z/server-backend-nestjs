@@ -1,10 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { getYear, differenceInCalendarDays, parseISO } from 'date-fns';
+import {
+  getYear,
+  differenceInCalendarDays,
+  parseISO,
+  isSameDay,
+} from 'date-fns';
 
 @Injectable()
 export class CalendarioService {
   constructor(private readonly databaseService: DatabaseService) {}
+  private readonly logger = new Logger(CalendarioService.name);
 
   async getEventosOrganizados(): Promise<any[]> {
     const resultados = await this.databaseService.consultarDados();
@@ -57,5 +63,17 @@ export class CalendarioService {
     );
 
     return proximosAniversarios[0];
+  }
+
+  async getAniversarioHoje(): Promise<any> {
+    const listaEventosOrganizada = await this.getEventosOrganizados();
+    const dataAtual = new Date();
+
+    const todayEvents = listaEventosOrganizada.filter((event) =>
+      isSameDay(parseISO(event.date), dataAtual),
+    );
+    this.logger.log(todayEvents);
+
+    return todayEvents;
   }
 }
