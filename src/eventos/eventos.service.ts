@@ -1,5 +1,21 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as schedule from 'node-schedule';
+import { getMonth, getYear, subMonths } from 'date-fns';
+
+// Pegar a data atual
+const currentDate = new Date();
+
+// Pegar o ano atual
+const currentYear = getYear(currentDate);
+
+// Pegar o mês atual
+const currentMonth = getMonth(currentDate) + 1;
+
+// Pegar a data do mês anterior
+const previousDate = subMonths(currentDate, 1);
+
+// Pegar o mês anterior
+const previousMonth = getMonth(previousDate) + 1;
 
 @Injectable()
 export class EventosService implements OnModuleInit {
@@ -42,8 +58,8 @@ export class EventosService implements OnModuleInit {
             api_key:
               'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
             api_key_cliente: key,
-            comp_inicial: '2024-05-01',
-            comp_final: '2024-06-01',
+            comp_inicial: `${currentYear}-${previousMonth}-01`,
+            comp_final: `${currentYear}-${currentMonth}-01`,
           }),
         },
       );
@@ -80,8 +96,8 @@ export class EventosService implements OnModuleInit {
             api_key:
               'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
             api_key_cliente: key,
-            comp_inicial: '2024-05-01',
-            comp_final: '2024-07-01',
+            comp_inicial: `${currentYear}-${previousMonth}-01`,
+            comp_final: `${currentYear}-${currentMonth}-01`,
           }),
         },
       );
@@ -130,6 +146,29 @@ export class EventosService implements OnModuleInit {
 
   delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+  calcula379 = async (faturamento, comprasUso, impostosRecolher) => {
+    // Calcula 20% do faturamento
+    const limite = 0.2 * faturamento;
+    // Calcula a soma de comprasUso e impostosRecolher
+    const totalComprasImpostos = comprasUso + impostosRecolher;
+
+    // Calcula o percentual de quanto falta para atingir o limite
+    const percentual = (totalComprasImpostos / limite) * 100;
+    return percentual;
+  };
+
+  calcula380 = async (compras, comprasUso, faturamento) => {
+    // Calcula 20% do faturamento
+    const limite = 0.8 * faturamento;
+    // Calcula a soma de comprasUso e impostosRecolher
+    const totalCompras = compras - comprasUso;
+
+    // Calcula o percentual de quanto falta para atingir o limite
+    const percentual = (totalCompras / limite) * 100;
+    const faltando = limite - totalCompras;
+    return { porcentagem: percentual, resto: faltando };
+  };
+
   listar = async () => {
     try {
       const listaDasEmpresas = await this.listarEmpresas();
@@ -140,7 +179,17 @@ export class EventosService implements OnModuleInit {
         const cnpj = empresa.inscricao_federal;
         const key = empresa.api_key_cliente;
 
-        let faturar, comprar, despesas, impostos;
+        let faturar,
+          comprar,
+          despesas,
+          impostos,
+          evento379,
+          calculo379,
+          evento380,
+          calculo380,
+          resto380,
+          calculo380Rest,
+          calculo380Porcent;
         let somaImpostos = 0;
 
         if (key) {
@@ -162,9 +211,16 @@ export class EventosService implements OnModuleInit {
             comprar = 'Sem informações';
             despesas = 'Sem informações';
           } else {
-            faturar = modificar[0].faturamento;
-            comprar = modificar[0].compras;
-            despesas = modificar[0].compras_uso;
+            faturar = parseFloat(modificar[0].faturamento);
+            comprar = parseFloat(modificar[0].compras);
+            despesas = parseFloat(modificar[0].compras_uso);
+            calculo379 = await this.calcula379(faturar, comprar, somaImpostos);
+            evento379 = calculo379.toFixed(2);
+            calculo380 = await this.calcula380(comprar, despesas, faturar);
+            calculo380Porcent = calculo380.porcentagem;
+            calculo380Rest = calculo380.resto;
+            evento380 = calculo380Porcent.toFixed(2);
+            resto380 = calculo380Rest.toFixed(2);
           }
         } else {
           faturar = 'API Key desativada';
@@ -174,10 +230,13 @@ export class EventosService implements OnModuleInit {
         }
 
         cont++;
+        this.logger.log(`Nome: ${nome}`);
         this.logger.log(`Faturamento: ${faturar}`);
         this.logger.log(`Compras: ${comprar}`);
         this.logger.log(`Despesas: ${despesas}`);
         this.logger.log(`Soma dos impostos: ${somaImpostos}`);
+        this.logger.log(`Evento379: ${evento379}`);
+        this.logger.log(`Evento380: ${evento380}, Faltando:${resto380}`);
         this.logger.log(`Adicionadas: ${cont}`);
 
         separacaoEmpresas.push({
@@ -188,8 +247,9 @@ export class EventosService implements OnModuleInit {
           compras: comprar,
           despesas: despesas,
           impostos: somaImpostos,
+          valor379: evento379,
+          valor380: evento380,
         });
-
         await this.delay(1600);
       }
 
