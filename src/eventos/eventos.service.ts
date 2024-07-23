@@ -265,7 +265,14 @@ export class EventosService implements OnModuleInit {
       this.logger.log(
         `Total de ${separacaoEmpresas.length} empresas atualizadas com sucesso!`,
       );
-      this.eventValues = separacaoEmpresas;
+      // Função de comparação para o sort
+      this.eventValues = separacaoEmpresas.sort((a, b) => {
+        // Comparar baseando-se em valor1 ou valor2
+        const maiorA = Math.max(a.valor379, a.valor380);
+        const maiorB = Math.max(b.valor379, b.valor380);
+
+        return maiorB - maiorA; // Ordena em ordem decrescente
+      });
     } catch (error) {
       this.logger.error('Erro ao listar empresas:', error.message);
     }
