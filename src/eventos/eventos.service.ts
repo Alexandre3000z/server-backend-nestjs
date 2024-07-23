@@ -154,7 +154,8 @@ export class EventosService implements OnModuleInit {
 
     // Calcula o percentual de quanto falta para atingir o limite
     const percentual = (totalComprasImpostos / limite) * 100;
-    return percentual;
+    const faltando = limite - totalComprasImpostos;
+    return { porcentagem: percentual, resto: faltando };
   };
 
   calcula380 = async (compras, comprasUso, faturamento) => {
@@ -189,7 +190,10 @@ export class EventosService implements OnModuleInit {
           calculo380,
           resto380,
           calculo380Rest,
-          calculo380Porcent;
+          calculo380Porcent,
+          resto379,
+          calculo379Rest,
+          calculo379Porcent;
         let somaImpostos = 0;
 
         if (key) {
@@ -215,7 +219,10 @@ export class EventosService implements OnModuleInit {
             comprar = parseFloat(modificar[0].compras);
             despesas = parseFloat(modificar[0].compras_uso);
             calculo379 = await this.calcula379(faturar, comprar, somaImpostos);
-            evento379 = calculo379.toFixed(2);
+            calculo379Porcent = calculo379.porcentagem;
+            calculo379Rest = calculo379.resto;
+            evento379 = calculo379Porcent.toFixed(2);
+            resto379 = calculo379Rest.toFixed(2);
             calculo380 = await this.calcula380(comprar, despesas, faturar);
             calculo380Porcent = calculo380.porcentagem;
             calculo380Rest = calculo380.resto;
@@ -235,7 +242,7 @@ export class EventosService implements OnModuleInit {
         this.logger.log(`Compras: ${comprar}`);
         this.logger.log(`Despesas: ${despesas}`);
         this.logger.log(`Soma dos impostos: ${somaImpostos}`);
-        this.logger.log(`Evento379: ${evento379}`);
+        this.logger.log(`Evento379: ${evento379}, Faltando:${resto379}`);
         this.logger.log(`Evento380: ${evento380}, Faltando:${resto380}`);
         this.logger.log(`Adicionadas: ${cont}`);
 
@@ -248,7 +255,9 @@ export class EventosService implements OnModuleInit {
           despesas: despesas,
           impostos: somaImpostos,
           valor379: evento379,
+          sobra379: resto379,
           valor380: evento380,
+          sobra380: resto380,
         });
         await this.delay(1600);
       }
