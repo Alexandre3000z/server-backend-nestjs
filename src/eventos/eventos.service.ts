@@ -152,21 +152,23 @@ export class EventosService implements OnModuleInit {
     // Calcula a soma de comprasUso e impostosRecolher
     const totalComprasImpostos = comprasUso + impostosRecolher;
 
-    // Calcula o percentual de quanto falta para atingir o limite
+    // Calcula o percentual de quanto foi gasto em relação ao limite
     const percentual = (totalComprasImpostos / limite) * 100;
     const faltando = limite - totalComprasImpostos;
+
     return { porcentagem: percentual, resto: faltando };
   };
 
   calcula380 = async (compras, comprasUso, faturamento) => {
-    // Calcula 20% do faturamento
+    // Calcula 80% do faturamento
     const limite = 0.8 * faturamento;
-    // Calcula a soma de comprasUso e impostosRecolher
-    const totalCompras = compras - comprasUso;
+    // Calcula a soma de compras e o uso
+    const totalComprasUso = compras - comprasUso;
 
-    // Calcula o percentual de quanto falta para atingir o limite
-    const percentual = (totalCompras / limite) * 100;
-    const faltando = limite - totalCompras;
+    // Calcula o percentual de quanto foi gasto em relação ao limite
+    const percentual = (totalComprasUso / limite) * 100;
+    const faltando = limite - totalComprasUso;
+
     return { porcentagem: percentual, resto: faltando };
   };
 
@@ -218,7 +220,7 @@ export class EventosService implements OnModuleInit {
             faturar = parseFloat(modificar[0].faturamento);
             comprar = parseFloat(modificar[0].compras);
             despesas = parseFloat(modificar[0].compras_uso);
-            calculo379 = await this.calcula379(faturar, comprar, somaImpostos);
+            calculo379 = await this.calcula379(faturar, despesas, somaImpostos);
             calculo379Porcent = calculo379.porcentagem;
             calculo379Rest = calculo379.resto;
             evento379 = calculo379Porcent.toFixed(2);
@@ -265,14 +267,41 @@ export class EventosService implements OnModuleInit {
       this.logger.log(
         `Total de ${separacaoEmpresas.length} empresas atualizadas com sucesso!`,
       );
+      function parseValue(value) {
+        if (
+          value === 'sem informações' ||
+          value === undefined ||
+          value === Infinity ||
+          Number.isNaN(parseFloat(value))
+        ) {
+          return -Infinity; // Tratar como valor inexistente ou inválido
+        }
+        return parseFloat(value);
+      }
       // Função de comparação para o sort
-      this.eventValues = separacaoEmpresas.sort((a, b) => {
-        // Comparar baseando-se em valor1 ou valor2
-        const maiorA = Math.max(a.valor379, a.valor380);
-        const maiorB = Math.max(b.valor379, b.valor380);
+      const organizando = separacaoEmpresas.sort((a, b) => {
+        // Calcular o máximo entre valor379 e valor380 para cada item
+        const maxA =
+          a.valor379 !== undefined || a.valor380 !== undefined
+            ? Math.max(parseValue(a.valor379), parseValue(a.valor380))
+            : -Infinity;
+        const maxB =
+          b.valor379 !== undefined || b.valor380 !== undefined
+            ? Math.max(parseValue(b.valor379), parseValue(b.valor380))
+            : -Infinity;
 
-        return maiorB - maiorA; // Ordena em ordem decrescente
+        // Tratar casos específicos de Infinity e NaN
+        if (maxA === -Infinity && maxB !== -Infinity) return 1;
+        if (maxB === -Infinity && maxA !== -Infinity) return -1;
+
+        // Tratar casos específicos de Infinity
+        if (maxA === Infinity) return 1;
+        if (maxB === Infinity) return -1;
+
+        // Ordem decrescente
+        return maxB - maxA;
       });
+      this.eventValues = organizando;
     } catch (error) {
       this.logger.error('Erro ao listar empresas:', error.message);
     }
