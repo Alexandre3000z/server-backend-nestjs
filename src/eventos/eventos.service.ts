@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as schedule from 'node-schedule';
 import { getMonth, getYear, subMonths } from 'date-fns';
+import { DatabaseService } from '../database/database.service';
 
 // Pegar a data atual
 const currentDate = new Date();
@@ -19,6 +20,7 @@ const previousMonth = getMonth(previousDate) + 1;
 
 @Injectable()
 export class EventosService implements OnModuleInit {
+  constructor(private readonly databaseService: DatabaseService) {}
   private readonly logger = new Logger(EventosService.name);
   private eventValues: any;
 
@@ -249,17 +251,17 @@ export class EventosService implements OnModuleInit {
         this.logger.log(`Adicionadas: ${cont}`);
 
         separacaoEmpresas.push({
-          nome: nome,
           cnpj: cnpj,
-          key: key,
-          faturamento: faturar,
+          nome: nome,
           compras: comprar,
           despesas: despesas,
+          faturamento: faturar,
           impostos: somaImpostos,
-          valor379: evento379,
+          key: key,
           sobra379: resto379,
-          valor380: evento380,
           sobra380: resto380,
+          valor379: evento379,
+          valor380: evento380,
         });
         await this.delay(1600);
       }
@@ -301,6 +303,7 @@ export class EventosService implements OnModuleInit {
         // Ordem decrescente
         return maxB - maxA;
       });
+      await this.databaseService.upsertEmpresa(organizando);
       this.eventValues = organizando;
     } catch (error) {
       this.logger.error('Erro ao listar empresas:', error.message);
@@ -308,6 +311,7 @@ export class EventosService implements OnModuleInit {
   };
 
   teste = async () => {
-    return this.eventValues;
+    const consulta = await this.databaseService.consultarDadosEventos();
+    return consulta;
   };
 }

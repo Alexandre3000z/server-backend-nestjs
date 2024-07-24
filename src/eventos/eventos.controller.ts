@@ -7,6 +7,7 @@ export class EventController {
 
   @Get('/')
   async teste() {
+    this.eventosService.teste;
     return this.eventosService.teste();
   }
 
