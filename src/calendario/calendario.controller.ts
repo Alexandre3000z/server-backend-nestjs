@@ -18,4 +18,12 @@ export class CalendarioController {
   async aniversario() {
     return this.calendarioService.getAniversarioHoje();
   }
+  @Get('socios')
+  async socios() {
+    return this.calendarioService.getSociosOrganizados();
+  }
+  @Get('aniversario-socios')
+  async aniversarioSocios() {
+    return this.calendarioService.getAniversarioSociosHoje();
+  }
 }
