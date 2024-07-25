@@ -25,8 +25,6 @@ export class EventosService implements OnModuleInit {
   private eventValues: any;
 
   async onModuleInit() {
-    // Executa a função listar quando o módulo é inicializado
-    await this.listar();
     this.logger.log('Inicialização do sistema completada com sucesso.');
 
     // Agenda a tarefa diária

@@ -31,6 +31,17 @@ export class DatabaseService {
       throw err;
     }
   }
+
+  async consultarDadosSocios(): Promise<any[]> {
+    try {
+      const res = await this.client.query('SELECT * FROM socios');
+      return res.rows;
+    } catch (err) {
+      console.error('Erro ao consultar os dados:', err);
+      throw err;
+    }
+  }
+
   async upsertEmpresa(data) {
     try {
       // Inicia uma transação
