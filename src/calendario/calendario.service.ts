@@ -50,7 +50,8 @@ export class CalendarioService {
       const empresa = item.empresa;
 
       return {
-        title: `${nome}  EMPRESA: ${empresa}`,
+        title: nome,
+        empresa: empresa,
         date: dataCompleta,
         color: 'green',
       };
