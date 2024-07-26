@@ -117,6 +117,58 @@ export class DatabaseService {
       console.error('Erro ao atualizar ou inserir dados:', error);
     }
   }
+
+  ///////////////////////////////////////////////////////////////////////
+
+  async upsertSocio(data) {
+    try {
+      // Inicia uma transação
+      await this.client.query('BEGIN');
+
+      // Percorre cada objeto na array de dados
+      for (const socio of data) {
+        const { nome, dataAniversario, empresa, cnpj } = socio;
+
+        // Tenta atualizar o registro se ele já existe
+        const updateQuery = `
+          UPDATE socios
+          SET nome_socio = $1, data_nascimento = $2, empresa = $3
+          WHERE cnpj = $4
+          RETURNING cnpj
+        `;
+
+        const updateResult = await this.client.query(updateQuery, [
+          nome,
+          dataAniversario,
+          empresa,
+          cnpj,
+        ]);
+
+        // Se o registro não foi atualizado (não existe), insere um novo
+        if (updateResult.rowCount === 0) {
+          const insertQuery = `
+            INSERT INTO socios (nome_socio, data_nascimento, empresa, cnpj)
+            VALUES ($1, $2, $3, $4)
+          `;
+
+          await this.client.query(insertQuery, [
+            nome,
+            dataAniversario,
+            empresa,
+            cnpj,
+          ]);
+        }
+      }
+
+      // Comita a transação
+      await this.client.query('COMMIT');
+    } catch (error) {
+      // Reverte a transação em caso de erro
+      await this.client.query('ROLLBACK');
+      console.error('Erro ao atualizar ou inserir dados:', error);
+    }
+  }
+
   async consultarDadosEventos(): Promise<any[]> {
     try {
       const res = await this.client.query('SELECT * FROM eventos');

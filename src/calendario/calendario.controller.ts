@@ -26,4 +26,9 @@ export class CalendarioController {
   async aniversarioSocios() {
     return this.calendarioService.getAniversarioSociosHoje();
   }
+
+  @Get('atualizarsocios')
+  async testea() {
+    this.calendarioService.postAtualizarSocios();
+  }
 }

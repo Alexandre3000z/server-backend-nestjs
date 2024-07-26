@@ -114,4 +114,113 @@ export class CalendarioService {
 
     return todayEvents;
   }
+  listarSocios = async (api_key_cliente) => {
+    const metodo = 'socios_aniversariantes';
+    const url = `https://app.e-kontroll.com.br/api/v1/metodo/${metodo}`;
+
+    try {
+      const socioApi = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          api_key:
+            'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+          api_key_cliente: api_key_cliente,
+        }),
+      });
+
+      const data = await socioApi.json();
+
+      if (data && data.dados && data.dados.data) {
+        return data.dados.data;
+      } else {
+        console.error('Estrutura de resposta inesperada', data);
+        return [];
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados da API', error);
+      throw error; // rethrow the error so it can be caught by the caller
+    }
+  };
+  delay = (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+  listarEmpresas = async () => {
+    try {
+      const response = await fetch(
+        'https://app.e-kontroll.com.br/api/v1/metodo/listar_empresas',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            api_key:
+              'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+            api_key_empresa:
+              'yQuZX1A45FYa7gohZvmlHHDsUPvjLnGCTxuXMdae4W8T5x05hgWEvQgtUmxf',
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText);
+      }
+
+      const data = await response.json();
+      return data.dados.data;
+    } catch (error) {
+      this.logger.error('Erro ao listar empresas:', error.message);
+      throw error;
+    }
+  };
+
+  async postAtualizarSocios(): Promise<any> {
+    let contador = 0;
+    const empresas = await this.listarEmpresas();
+    const separacaoSocios = [];
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+
+    for (let i = 0; i < empresas.length; i++) {
+      const empresa = empresas[i]['razao_social'];
+      const cnpj = empresas[i]['inscricao_federal'];
+      const key = empresas[i]['api_key_cliente'];
+      if (key) {
+        try {
+          const listaSocios = await this.listarSocios(key);
+
+          if (listaSocios && listaSocios.length > 0) {
+            for (let a = 0; a < listaSocios.length; a++) {
+              const nome = listaSocios[a]['nome'];
+              const dataAniversario = listaSocios[a]['data_nascimento'];
+              separacaoSocios.push({
+                nome,
+                dataAniversario,
+                empresa,
+                cnpj,
+              });
+              contador++;
+              console.log(`${contador} EMPRESAS ADICIONADAS`);
+
+              // Adiciona um delay entre requisições para evitar sobrecarregar o servidor
+              await delay(3000);
+            }
+          } else {
+            console.log('API KEY INVALIDA');
+          }
+        } catch (error) {
+          console.error(
+            `Erro ao listar sócios para a empresa ${empresa}:`,
+            error,
+          );
+        }
+      }
+    }
+
+    console.log(`Total de sócios adicionados: ${contador}`);
+    await this.databaseService.upsertSocio(separacaoSocios);
+  }
 }
