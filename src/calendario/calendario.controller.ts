@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { CalendarioService } from './calendario.service';
 
 @Controller('calendario')
@@ -27,7 +27,7 @@ export class CalendarioController {
     return this.calendarioService.getAniversarioSociosHoje();
   }
 
-  @Get('atualizarsocios')
+  @Post('atualizarsocios')
   async testea() {
     this.calendarioService.postAtualizarSocios();
   }

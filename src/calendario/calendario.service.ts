@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { Cron } from '@nestjs/schedule'; // Importa o decorator Cron e o CronExpression
+
 import {
   getYear,
   differenceInCalendarDays,
@@ -177,6 +179,12 @@ export class CalendarioService {
     }
   };
 
+  @Cron('00 23 * * *') // Configura o cron job para 23:00 todos os dias
+  async handleCron() {
+    this.logger.log('Executando postAtualizarSocios às 23:00');
+    await this.postAtualizarSocios();
+  }
+
   async postAtualizarSocios(): Promise<any> {
     let contador = 0;
     const empresas = await this.listarEmpresas();
@@ -203,7 +211,7 @@ export class CalendarioService {
                 cnpj,
               });
               contador++;
-              console.log(`${contador} EMPRESAS ADICIONADAS`);
+              console.log(`${contador} SOCIOS ATUALIZADOS`);
 
               // Adiciona um delay entre requisições para evitar sobrecarregar o servidor
               await delay(3000);
