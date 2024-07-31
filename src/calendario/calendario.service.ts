@@ -101,7 +101,6 @@ export class CalendarioService {
     const todayEvents = listaEventosOrganizada.filter((event) =>
       isSameDay(parseISO(event.date), dataAtual),
     );
-    this.logger.log(todayEvents);
 
     return todayEvents;
   }
@@ -112,7 +111,6 @@ export class CalendarioService {
     const todayEvents = listaEventosOrganizada.filter((event) =>
       isSameDay(parseISO(event.date), dataAtual),
     );
-    this.logger.log(todayEvents);
 
     return todayEvents;
   }
