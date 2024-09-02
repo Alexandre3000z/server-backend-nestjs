@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
-import {getMonth, format, getYear } from 'date-fns';
+import { format, getYear } from 'date-fns';
 @Injectable()
 export class DatabaseService {
   private client: Client;
