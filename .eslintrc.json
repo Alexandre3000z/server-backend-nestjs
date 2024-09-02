@@ -1,0 +1,14 @@
+{
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": ["plugin:@typescript-eslint/recommended"],
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "rules": {
+      // Aqui você pode adicionar suas próprias regras personalizadas
+    },
+    "fix": true
+
+  }

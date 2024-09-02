@@ -1,19 +1,22 @@
-import { Controller, Get, Post } from '@nestjs/common';
-import { EventosService } from './eventos.service';
+import { Controller, Get, Post } from "@nestjs/common";
+import { EventosService } from "./eventos.service";
 
-@Controller('eventos')
+@Controller("eventos")
 export class EventController {
   constructor(private readonly eventosService: EventosService) {}
 
-  @Get('/')
+  @Get("/")
   async teste() {
     return this.eventosService.teste();
   }
 
-  @Post('atualizar')
+  @Post("atualizar")
   async atualizarLista() {
     this.eventosService.listar();
-    const msg = 'Ok, atualização enviada, aguarde 25 min';
+    const msg = "Ok, atualização enviada, aguarde 25 min";
     return msg;
   }
+
+ 
+
 }
