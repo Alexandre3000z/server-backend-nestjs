@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
-import {} from 'date-fns';
+import {getMonth, format, getYear } from 'date-fns';
 @Injectable()
 export class DatabaseService {
   private client: Client;
@@ -46,6 +46,20 @@ export class DatabaseService {
     try {
       // Inicia uma transação
       await this.client.query('BEGIN');
+      
+      const hoje = new Date();
+      
+      const nomeDoMesAtual = format(hoje, 'MMMM');
+      const anoAtual = getYear(hoje);
+      
+        const criarMes = `
+        CREATE TABLE IF NOT EXISTS ${nomeDoMesAtual + anoAtual} } (
+                id SERIAL PRIMARY KEY,
+                coluna1 VARCHAR(255),
+                coluna2 INTEGER
+            );
+        `;
+      
 
       // Percorre cada objeto na array de dados
       for (const empresa of data) {
@@ -65,7 +79,7 @@ export class DatabaseService {
 
         // Tenta atualizar o registro se ele já existe
         const updateQuery = `
-          UPDATE eventos
+          UPDATE ${nomeDoMesAtual + anoAtual}
           SET nome = $2, compras = $3, despesas = $4, faturamento = $5, impostos = $6, key = $7, 
               sobra379 = $8, sobra380 = $9, valor379 = $10, valor380 = $11
           WHERE cnpj = $1
@@ -89,7 +103,7 @@ export class DatabaseService {
         // Se o registro não foi atualizado (não existe), insere um novo
         if (updateResult.rowCount === 0) {
           const insertQuery = `
-            INSERT INTO eventos (cnpj, nome, compras, despesas, faturamento, impostos, key, sobra379, sobra380, valor379, valor380)
+            INSERT INTO ${nomeDoMesAtual + anoAtual} (cnpj, nome, compras, despesas, faturamento, impostos, key, sobra379, sobra380, valor379, valor380)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
           `;
 
