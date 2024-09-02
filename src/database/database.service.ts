@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Client } from 'pg';
-
+//preciso fazer uma nova tabela 
 @Injectable()
 export class DatabaseService {
   private client: Client;
