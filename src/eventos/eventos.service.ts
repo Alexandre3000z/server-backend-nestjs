@@ -312,4 +312,5 @@ export class EventosService implements OnModuleInit {
     const consulta = await this.databaseService.consultarDadosEventos();
     return consulta;
   };
+ 
 }
