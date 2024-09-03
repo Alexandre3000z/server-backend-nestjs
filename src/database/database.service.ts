@@ -71,6 +71,7 @@ export class DatabaseService {
           WHERE cnpj = $1
           RETURNING cnpj
         `;
+        // teste
 
         const updateResult = await this.client.query(updateQuery, [
           cnpj,
