@@ -308,7 +308,7 @@ export class EventosService implements OnModuleInit {
     }
   };
 
-  teste = async () => {
+  consultaEventosHoje = async () => {
     const consulta = await this.databaseService.consultarDadosEventos();
     return consulta;
   };

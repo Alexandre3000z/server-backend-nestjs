@@ -7,7 +7,7 @@ export class EventController {
 
   @Get("/")
   async teste() {
-    return this.eventosService.teste();
+    return this.eventosService.consultaEventosHoje();
   }
 
   @Post("atualizar")
