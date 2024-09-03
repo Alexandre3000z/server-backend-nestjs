@@ -137,8 +137,14 @@ export class EventosService implements OnModuleInit {
       }
 
       const data = await response.json();
-      return data.dados.data;
-    } catch (error) {
+      const Dados = data.dados.data;
+      
+      const empresasAtivas = Dados.filter(
+        (item: any) => item.status_empresa === "A"
+      );
+      return empresasAtivas
+        
+      } catch (error) {
       this.logger.error('Erro ao listar empresas:', error.message);
       throw error;
     }
