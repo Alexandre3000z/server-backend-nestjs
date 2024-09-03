@@ -53,7 +53,6 @@ export class DatabaseService {
     const hoje = new Date();
 
     // Nome do mês atual e ano atual
-    const nomeDoMesAtual = format(hoje, "MMMM");
     const anoAtual = getYear(hoje);
 
     // Data do mês passado
