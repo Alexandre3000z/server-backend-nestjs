@@ -313,4 +313,8 @@ export class EventosService implements OnModuleInit {
     return consulta;
   };
  
+  consultarPorData = async (mes) => {
+    const consulta = await this.databaseService.consultarDadosEventosPorData(mes);
+    return consulta;
+  };
 }
