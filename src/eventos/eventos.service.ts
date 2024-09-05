@@ -59,7 +59,7 @@ export class EventosService implements OnModuleInit {
               'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
             api_key_cliente: key,
             comp_inicial: `${currentYear}-${previousMonth}-01`,
-            comp_final: `${currentYear}-${currentMonth}-01`,
+            comp_final: `${currentYear}-${previousMonth}-01`,
           }),
         },
       );
@@ -97,7 +97,7 @@ export class EventosService implements OnModuleInit {
               'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
             api_key_cliente: key,
             comp_inicial: `${currentYear}-${previousMonth}-01`,
-            comp_final: `${currentYear}-${currentMonth}-01`,
+            comp_final: `${currentYear}-${previousMonth}-01`,
           }),
         },
       );
