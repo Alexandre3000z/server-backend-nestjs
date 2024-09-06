@@ -41,37 +41,35 @@ export class DatabaseService {
       throw err;
     }
   }
-  
 
   async upsertEmpresa(data) {
-
     try {
       // Inicia uma transação
       await this.client.query("BEGIN");
 
-       // Data atual
-    const hoje = new Date();
+      // Data atual
+      const hoje = new Date();
 
-    // Nome do mês atual e ano atual
-    const anoAtual = getYear(hoje);
+      // Nome do mês atual e ano atual
+      const anoAtual = getYear(hoje);
 
-    // Data do mês passado
-    const umMesAtras = subMonths(hoje, 1);
+      // Data do mês passado
+      const umMesAtras = subMonths(hoje, 1);
 
-    // Nome do mês passado
-    const nomeDoMesPassado = format(umMesAtras, "MMMM");
+      // Nome do mês passado
+      const nomeDoMesPassado = format(umMesAtras, "MMMM");
 
-    // Data do ano passado
-    const mesmaDataNoAnopassado = subYears(hoje, 1);
-    const AnoPassado = format(mesmaDataNoAnopassado, "yyyy");
+      // Data do ano passado
+      const mesmaDataNoAnopassado = subYears(hoje, 1);
+      const AnoPassado = format(mesmaDataNoAnopassado, "yyyy");
 
-    // Nome da tabela, usando o ano passado se o mês for dezembro
-    const nomeDaTabela =
-      nomeDoMesPassado === "December"
-        ? `${nomeDoMesPassado}${AnoPassado}`
-        : `${nomeDoMesPassado}${anoAtual}`;
+      // Nome da tabela, usando o ano passado se o mês for dezembro
+      const nomeDaTabela =
+        nomeDoMesPassado === "December"
+          ? `${nomeDoMesPassado}${AnoPassado}`
+          : `${nomeDoMesPassado}${anoAtual}`;
 
-    const criarMes = `
+      const criarMes = `
       CREATE TABLE IF NOT EXISTS ${nomeDaTabela} (
         id SERIAL PRIMARY KEY,
         cnpj VARCHAR(255),
@@ -88,9 +86,8 @@ export class DatabaseService {
       );
     `;
 
-    await this.client.query(criarMes);
-    await this.client.query("COMMIT");
-  
+      await this.client.query(criarMes);
+      await this.client.query("COMMIT");
 
       // Percorre cada objeto na array de dados
       for (const empresa of data) {
@@ -216,27 +213,27 @@ export class DatabaseService {
 
   async consultarDadosEventos(): Promise<any[]> {
     try {
-          // Data atual
-    const hoje = new Date();
+      // Data atual
+      const hoje = new Date();
 
-    // Nome do mês atual e ano atual
-    const anoAtual = getYear(hoje);
+      // Nome do mês atual e ano atual
+      const anoAtual = getYear(hoje);
 
-    // Data do mês passado
-    const umMesAtras = subMonths(hoje, 1);
+      // Data do mês passado
+      const umMesAtras = subMonths(hoje, 1);
 
-    // Nome do mês passado
-    const nomeDoMesPassado = format(umMesAtras, "MMMM");
+      // Nome do mês passado
+      const nomeDoMesPassado = format(umMesAtras, "MMMM");
 
-    // Data do ano passado
-    const mesmaDataNoAnopassado = subYears(hoje, 1);
-    const AnoPassado = format(mesmaDataNoAnopassado, "yyyy");
+      // Data do ano passado
+      const mesmaDataNoAnopassado = subYears(hoje, 1);
+      const AnoPassado = format(mesmaDataNoAnopassado, "yyyy");
 
-    // Nome da tabela, usando o ano passado se o mês for dezembro
-    const nomeDaTabela =
-      nomeDoMesPassado === "December"
-        ? `${nomeDoMesPassado}${AnoPassado}`
-        : `${nomeDoMesPassado}${anoAtual}`;
+      // Nome da tabela, usando o ano passado se o mês for dezembro
+      const nomeDaTabela =
+        nomeDoMesPassado === "December"
+          ? `${nomeDoMesPassado}${AnoPassado}`
+          : `${nomeDoMesPassado}${anoAtual}`;
 
       const res = await this.client.query(`SELECT * FROM ${nomeDaTabela}`);
       return res.rows;
@@ -248,7 +245,6 @@ export class DatabaseService {
 
   async consultarDadosEventosPorData(mes): Promise<any[]> {
     try {
-      
       const res = await this.client.query(`SELECT * FROM ${mes}`);
       return res.rows;
     } catch (err) {

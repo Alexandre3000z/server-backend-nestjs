@@ -6,8 +6,8 @@ import { DatabaseService } from '../database/database.service';
 // Pegar a data atual
 const currentDate = new Date();
 
-// Pegar o ano atual
-const currentYear = getYear(currentDate);
+
+
 
 // Pegar o mês atual
 const currentMonth = getMonth(currentDate) + 1;
@@ -18,6 +18,8 @@ const previousDate = subMonths(currentDate, 1);
 // Pegar o mês anterior
 const previousMonth = getMonth(previousDate) + 1;
 
+// Pegar o ano atual
+const currentYear = getYear(previousDate);
 @Injectable()
 export class EventosService implements OnModuleInit {
   constructor(private readonly databaseService: DatabaseService) {}
