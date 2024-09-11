@@ -1,13 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import * as schedule from 'node-schedule';
-import { getMonth, getYear, subMonths } from 'date-fns';
-import { DatabaseService } from '../database/database.service';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import * as schedule from "node-schedule";
+import { getMonth, getYear, subMonths } from "date-fns";
+import { DatabaseService } from "../database/database.service";
 
 // Pegar a data atual
 const currentDate = new Date();
-
-
-
 
 // Pegar o mês atual
 const currentMonth = getMonth(currentDate) + 1;
@@ -27,7 +24,7 @@ export class EventosService implements OnModuleInit {
   private eventValues: any;
 
   async onModuleInit() {
-    this.logger.log('Inicialização do sistema completada com sucesso.');
+    this.logger.log("Inicialização do sistema completada com sucesso.");
 
     // Agenda a tarefa diária
     this.scheduleDailyTask();
@@ -35,14 +32,14 @@ export class EventosService implements OnModuleInit {
 
   private scheduleDailyTask() {
     // Define o horário para a execução da tarefa (22:00 todos os dias)
-    schedule.scheduleJob('0 22 * * *', async () => {
+    schedule.scheduleJob("0 22 * * *", async () => {
       try {
         await this.listar();
         this.logger.log(
-          'Atualização dos eventos 379 e 380 executada com sucesso às 22:00',
+          "Atualização dos eventos 379 e 380 executada com sucesso às 22:00"
         );
       } catch (error) {
-        this.logger.error('Erro ao executar tarefa diária:', error.message);
+        this.logger.error("Erro ao executar tarefa diária:", error.message);
       }
     });
   }
@@ -50,37 +47,37 @@ export class EventosService implements OnModuleInit {
   faturamentoEmpresa = async (key: string) => {
     try {
       const response = await fetch(
-        'https://app.e-kontroll.com.br/api/v1/metodo/faturamento',
+        "https://app.e-kontroll.com.br/api/v1/metodo/faturamento",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             api_key:
-              'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+              "p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz",
             api_key_cliente: key,
             comp_inicial: `${currentYear}-${previousMonth}-01`,
             comp_final: `${currentYear}-${previousMonth}-01`,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
         throw new Error(
-          'Erro ao tentar obter faturamento: ' + response.statusText,
+          "Erro ao tentar obter faturamento: " + response.statusText
         );
       }
 
       const data = await response.json();
 
       if (!data.dados || !data.dados.data) {
-        throw new Error('Formato de resposta inválido: dados não encontrados');
+        throw new Error("Formato de resposta inválido: dados não encontrados");
       }
 
       return data.dados.data;
     } catch (error) {
-      this.logger.error('Erro na requisição de faturamento:', error.message);
+      this.logger.error("Erro na requisição de faturamento:", error.message);
       throw error;
     }
   };
@@ -88,30 +85,30 @@ export class EventosService implements OnModuleInit {
   impostosEmpresa = async (key: string) => {
     try {
       const response = await fetch(
-        'https://app.e-kontroll.com.br/api/v1/metodo/impostos',
+        "https://app.e-kontroll.com.br/api/v1/metodo/impostos",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             api_key:
-              'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+              "p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz",
             api_key_cliente: key,
             comp_inicial: `${currentYear}-${previousMonth}-01`,
             comp_final: `${currentYear}-${previousMonth}-01`,
           }),
-        },
+        }
       );
 
       if (!response.ok) {
-        throw new Error('Erro ao buscar os dados: ' + response.status);
+        throw new Error("Erro ao buscar os dados: " + response.status);
       }
 
       const data = await response.json();
       return data.dados.data;
     } catch (error) {
-      this.logger.error('Erro na função impostosEmpresa:', error.message);
+      this.logger.error("Erro na função impostosEmpresa:", error.message);
       throw error;
     }
   };
@@ -119,35 +116,71 @@ export class EventosService implements OnModuleInit {
   listarEmpresas = async () => {
     try {
       const response = await fetch(
-        'https://app.e-kontroll.com.br/api/v1/metodo/listar_empresas',
+        "https://app.e-kontroll.com.br/api/v1/metodo/listar_empresas",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             api_key:
-              'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+              "p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz",
             api_key_empresa:
-              'yQuZX1A45FYa7gohZvmlHHDsUPvjLnGCTxuXMdae4W8T5x05hgWEvQgtUmxf',
+              "yQuZX1A45FYa7gohZvmlHHDsUPvjLnGCTxuXMdae4W8T5x05hgWEvQgtUmxf",
           }),
-        },
+        }
       );
 
       if (!response.ok) {
-        throw new Error('Network response was not ok ' + response.statusText);
+        throw new Error("Network response was not ok " + response.statusText);
       }
 
       const data = await response.json();
       const Dados = data.dados.data;
-      
+
       const empresasAtivas = Dados.filter(
         (item: any) => item.status_empresa === "A"
       );
-      return empresasAtivas
-        
-      } catch (error) {
-      this.logger.error('Erro ao listar empresas:', error.message);
+      return empresasAtivas;
+    } catch (error) {
+      this.logger.error("Erro ao listar empresas:", error.message);
+      throw error;
+    }
+  };
+  listarEmpresasEventos = async () => {
+    try {
+      const response = await fetch(
+        "https://app.e-kontroll.com.br/api/v1/metodo/listar_empresas",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            api_key:
+              "p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz",
+            api_key_empresa:
+              "yQuZX1A45FYa7gohZvmlHHDsUPvjLnGCTxuXMdae4W8T5x05hgWEvQgtUmxf",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok " + response.statusText);
+      }
+
+      const data = await response.json();
+      const Dados = data.dados.data;
+
+      const empresasAtivas = Dados.filter(
+        (item: any) =>
+          item.status_empresa === "A" &&
+          item.segmento === "C" &&
+          item.regime_tributario === "SIMPLES NACIONAL"
+      );
+      return empresasAtivas;
+    } catch (error) {
+      this.logger.error("Erro ao listar empresas:", error.message);
       throw error;
     }
   };
@@ -182,7 +215,7 @@ export class EventosService implements OnModuleInit {
 
   listar = async () => {
     try {
-      const listaDasEmpresas = await this.listarEmpresas();
+      const listaDasEmpresas = await this.listarEmpresasEventos();
       let cont = 0;
       const separacaoEmpresas = [];
       for (const empresa of listaDasEmpresas) {
@@ -209,7 +242,7 @@ export class EventosService implements OnModuleInit {
         if (key) {
           const modificarImposto = await this.impostosEmpresa(key);
           if (modificarImposto.length === 0) {
-            impostos = 'Sem informações';
+            impostos = "Sem informações";
           } else {
             for (const imposto of modificarImposto) {
               impostos = parseFloat(imposto.arecolher);
@@ -221,9 +254,9 @@ export class EventosService implements OnModuleInit {
           }
           const modificar = await this.faturamentoEmpresa(key);
           if (modificar.length === 0) {
-            faturar = 'Sem informações';
-            comprar = 'Sem informações';
-            despesas = 'Sem informações';
+            faturar = "Sem informações";
+            comprar = "Sem informações";
+            despesas = "Sem informações";
           } else {
             faturar = parseFloat(modificar[0].faturamento);
             comprar = parseFloat(modificar[0].compras);
@@ -240,10 +273,10 @@ export class EventosService implements OnModuleInit {
             resto380 = calculo380Rest.toFixed(2);
           }
         } else {
-          faturar = 'API Key desativada';
-          comprar = 'API Key desativada';
-          despesas = 'API Key desativada';
-          impostos = 'API key desativada';
+          faturar = "API Key desativada";
+          comprar = "API Key desativada";
+          despesas = "API Key desativada";
+          impostos = "API key desativada";
         }
 
         cont++;
@@ -273,11 +306,11 @@ export class EventosService implements OnModuleInit {
       }
 
       this.logger.log(
-        `Total de ${separacaoEmpresas.length} empresas atualizadas com sucesso!`,
+        `Total de ${separacaoEmpresas.length} empresas atualizadas com sucesso!`
       );
       function parseValue(value) {
         if (
-          value === 'sem informações' ||
+          value === "sem informações" ||
           value === undefined ||
           value === Infinity ||
           Number.isNaN(parseFloat(value))
@@ -312,7 +345,7 @@ export class EventosService implements OnModuleInit {
       await this.databaseService.upsertEmpresa(organizando);
       this.eventValues = organizando;
     } catch (error) {
-      this.logger.error('Erro ao listar empresas:', error.message);
+      this.logger.error("Erro ao listar empresas:", error.message);
     }
   };
 
@@ -320,9 +353,10 @@ export class EventosService implements OnModuleInit {
     const consulta = await this.databaseService.consultarDadosEventos();
     return consulta;
   };
- 
+
   consultarPorData = async (mes) => {
-    const consulta = await this.databaseService.consultarDadosEventosPorData(mes);
+    const consulta =
+      await this.databaseService.consultarDadosEventosPorData(mes);
     return consulta;
   };
 }
