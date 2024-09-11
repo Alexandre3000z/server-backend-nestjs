@@ -174,9 +174,8 @@ export class EventosService implements OnModuleInit {
 
       const empresasAtivas = Dados.filter(
         (item: any) =>
-          item.status_empresa === "A" &&
-          item.segmento === "C" &&
-          item.regime_tributario === "SIMPLES NACIONAL"
+          item.status_empresa === "A" && 
+          item.regime_tributario == "SIMPLES NACIONAL"
       );
       return empresasAtivas;
     } catch (error) {
