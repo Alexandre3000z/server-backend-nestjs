@@ -73,9 +73,7 @@ export class EventosService implements OnModuleInit {
     if (!data.dados || !data.dados.data) {
       throw new Error('Formato de resposta inválido: dados não encontrados');
     }
-  
-    console.log('Dados recebidos:', data.dados.data);
-  
+    
     const campos = [
       'faturamento', 'venda', 'revenda', 'servico', 
       'compras', 'compras_imob', 'compras_mp', 
@@ -95,7 +93,6 @@ export class EventosService implements OnModuleInit {
       return acc;
     }, {});
   
-    console.log([resultados]);
     const listalegal = []
     listalegal.push(resultados)
     return listalegal;
