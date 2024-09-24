@@ -170,7 +170,7 @@ export class DatabaseService {
     }
   }
 
-  async consultarDadosEventos(): Promise<any[]> {
+  async   consultarDadosEventos(): Promise<any[]> {
     try {
       const res = await this.client.query('SELECT * FROM eventos');
       return res.rows;

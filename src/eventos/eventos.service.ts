@@ -46,41 +46,59 @@ export class EventosService implements OnModuleInit {
   }
 
   faturamentoEmpresa = async (key: string) => {
-    try {
-      const response = await fetch(
-        'https://app.e-kontroll.com.br/api/v1/metodo/faturamento',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            api_key:
-              'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
-            api_key_cliente: key,
-            comp_inicial: `${currentYear}-${previousMonth}-01`,
-            comp_final: `${currentYear}-${currentMonth}-01`,
-          }),
+    const compInicial = `${currentYear}-01-01`;
+    const compFinal = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`;
+  
+    const response = await fetch(
+      'https://app.e-kontroll.com.br/api/v1/metodo/faturamento',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          'Erro ao tentar obter faturamento: ' + response.statusText,
-        );
+        body: JSON.stringify({
+          api_key: 'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+          api_key_cliente: key,
+          comp_inicial: compInicial,
+          comp_final: compFinal,
+        }),
       }
-
-      const data = await response.json();
-
-      if (!data.dados || !data.dados.data) {
-        throw new Error('Formato de resposta inválido: dados não encontrados');
-      }
-
-      return data.dados.data;
-    } catch (error) {
-      this.logger.error('Erro na requisição de faturamento:', error.message);
-      throw error;
+    );
+  
+    if (!response.ok) {
+      throw new Error('Erro ao tentar obter faturamento: ' + response.statusText);
     }
+  
+    const data = await response.json();
+    if (!data.dados || !data.dados.data) {
+      throw new Error('Formato de resposta inválido: dados não encontrados');
+    }
+  
+    console.log('Dados recebidos:', data.dados.data);
+  
+    const campos = [
+      'faturamento', 'venda', 'revenda', 'servico', 
+      'compras', 'compras_imob', 'compras_mp', 
+      'compras_uso', 'compras_rev', 'compras_serv'
+    ];
+  
+    const resultados = campos.reduce((acc, campo) => {
+      acc[campo] = data.dados.data.reduce((total, item) => {
+        const valor = parseFloat(item[campo]);
+        if (isNaN(valor)) {
+          console.warn(`Valor inválido encontrado: ${item[campo]}`);
+
+          return total;
+        }
+        return Math.round(total + valor);
+      }, 0);
+      return acc;
+    }, {});
+  
+    console.log([resultados]);
+    const listalegal = []
+    listalegal.push(resultados)
+    return listalegal;
   };
 
   impostosEmpresa = async (key: string) => {
@@ -99,7 +117,7 @@ export class EventosService implements OnModuleInit {
             comp_inicial: `${currentYear}-${previousMonth}-01`,
             comp_final: `${currentYear}-${currentMonth}-01`,
           }),
-        },
+        },  
       );
 
       if (!response.ok) {
