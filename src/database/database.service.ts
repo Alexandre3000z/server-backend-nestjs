@@ -213,14 +213,32 @@ export class DatabaseService {
 
   async consultarDadosEventos(): Promise<any[]> {
     try {
-     
-      const res = await this.client.query(`SELECT * FROM eventos`);
+      const hoje = new Date();
+
+      // Nome do mês atual e ano atual
+      const anoAtual = getYear(hoje);
+
+      // Data do mês passado
+      const umMesAtras = subMonths(hoje, 1);
+
+      // Nome do mês passado
+      const nomeDoMesPassado = format(umMesAtras, "MMMM");
+
+      // Data do ano passado
+      const mesmaDataNoAnopassado = subYears(hoje, 1);
+      const AnoPassado = format(mesmaDataNoAnopassado, "yyyy");
+
+      // Nome da tabela, usando o ano passado se o mês for dezembro
+      const nomeDaTabela =
+        nomeDoMesPassado === "December"
+          ? `${nomeDoMesPassado}${AnoPassado}`
+          : `${nomeDoMesPassado}${anoAtual}`;
+
+      const res = await this.client.query(`SELECT * FROM ${nomeDaTabela}`);
       return res.rows;
     } catch (err) {
       console.error("Erro ao consultar os dados:", err);
       throw err;
     }
   }
-
-  
 }
