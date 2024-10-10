@@ -46,39 +46,49 @@ export class EventosService implements OnModuleInit {
 
   faturamentoEmpresa = async (key: string) => {
     const compInicial = `${currentYear}-01-01`;
-    const compFinal = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`;
-  
+    const compFinal = `${currentYear}-${currentMonth.toString().padStart(2, "0")}-01`;
+
     const response = await fetch(
-      'https://app.e-kontroll.com.br/api/v1/metodo/faturamento',
+      "https://app.e-kontroll.com.br/api/v1/metodo/faturamento",
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          api_key: 'p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz',
+          api_key:
+            "p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz",
           api_key_cliente: key,
           comp_inicial: compInicial,
           comp_final: compFinal,
         }),
       }
     );
-  
+
     if (!response.ok) {
-      throw new Error('Erro ao tentar obter faturamento: ' + response.statusText);
+      throw new Error(
+        "Erro ao tentar obter faturamento: " + response.statusText
+      );
     }
-  
+
     const data = await response.json();
     if (!data.dados || !data.dados.data) {
-      throw new Error('Formato de resposta inválido: dados não encontrados');
+      throw new Error("Formato de resposta inválido: dados não encontrados");
     }
-    
+
     const campos = [
-      'faturamento', 'venda', 'revenda', 'servico', 
-      'compras', 'compras_imob', 'compras_mp', 
-      'compras_uso', 'compras_rev', 'compras_serv'
+      "faturamento",
+      "venda",
+      "revenda",
+      "servico",
+      "compras",
+      "compras_imob",
+      "compras_mp",
+      "compras_uso",
+      "compras_rev",
+      "compras_serv",
     ];
-  
+
     const resultados = campos.reduce((acc, campo) => {
       acc[campo] = data.dados.data.reduce((total, item) => {
         const valor = parseFloat(item[campo]);
@@ -91,12 +101,14 @@ export class EventosService implements OnModuleInit {
       }, 0);
       return acc;
     }, {});
-  
-    const listalegal = []
-    listalegal.push(resultados)
+
+    const listalegal = [];
+    listalegal.push(resultados);
     return listalegal;
   };
   impostosEmpresa = async (key: string) => {
+    const compInicial = `${currentYear}-01-01`;
+    const compFinal = `${currentYear}-${currentMonth.toString().padStart(2, "0")}-01`;
     try {
       const response = await fetch(
         "https://app.e-kontroll.com.br/api/v1/metodo/impostos",
@@ -109,8 +121,8 @@ export class EventosService implements OnModuleInit {
             api_key:
               "p2zazIRGQ9mwizXKkmVRBasVVW234DLdKkIpu53Rw8eh6zFpBOLolUWBCZmz",
             api_key_cliente: key,
-            comp_inicial: `${currentYear}-${previousMonth}-01`,
-            comp_final: `${currentYear}-${previousMonth}-01`,
+            comp_inicial: compInicial,
+            comp_final: '2024-10-01',
           }),
         }
       );
@@ -120,7 +132,24 @@ export class EventosService implements OnModuleInit {
       }
 
       const data = await response.json();
-      return data.dados.data;
+
+      const campos = ["arecolher"];
+      const resultados = campos.reduce((acc, campo) => {
+        acc[campo] = data.dados.data.reduce((total, item) => {
+          const valor = parseFloat(item[campo]);
+          if (isNaN(valor)) {
+            console.warn(`Valor inválido encontrado: ${item[campo]}`);
+
+            return total;
+          }
+          return Math.round(total + valor);
+        }, 0);
+        return acc;
+      }, {});
+
+      const listalegal = [];
+      listalegal.push(resultados);
+      return listalegal;
     } catch (error) {
       this.logger.error("Erro na função impostosEmpresa:", error.message);
       throw error;
@@ -188,7 +217,7 @@ export class EventosService implements OnModuleInit {
 
       const empresasAtivas = Dados.filter(
         (item: any) =>
-          item.status_empresa === "A" && 
+          item.status_empresa === "A" &&
           item.regime_tributario == "SIMPLES NACIONAL"
       );
       return empresasAtivas;
@@ -366,5 +395,4 @@ export class EventosService implements OnModuleInit {
     const consulta = await this.databaseService.consultarDadosEventos();
     return consulta;
   };
-
 }
